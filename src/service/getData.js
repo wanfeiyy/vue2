@@ -52,7 +52,29 @@ var msiteFoodTypes = geohash => fetch('GET', '/v2/index_entry', {
   'flags[]': 'F'
 });
 
+/**
+ * 获取msite商铺列表
+ */
+var shopList = (latitude,longitude,offset,restaurant_category_id = '',restaurant_category_ids = '',order_by = '', delivery_mode = '', support_ids = []) => {
+  let supportStr = '';
+  support_ids.forEach(item => {
+    item.status && (supportStr += '&support_ids[]='+item.id)
+  })
+  let data = {
+    latitude,
+    longitude,
+    offset,
+    limit: '20',
+    'extras[]': 'activities',
+    keyword: '',
+    restaurant_category_id,
+    'restaurant_category_ids[]': restaurant_category_ids,
+    order_by,
+    'delivery_mode[]': delivery_mode + supportStr
+  }
+  return fetch('GET','/shopping/restaurants',data);
+}
 
 export {
-  hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes
+  hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes,shopList,
 }

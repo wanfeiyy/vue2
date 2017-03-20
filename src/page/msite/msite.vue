@@ -43,12 +43,14 @@
                 </svg>
                 <span class="shop-header-title">附近商家</span>
             </header>
+            <shop-list v-if="hasGetData" :geohash="geohash"></shop-list>
         </div>
     </div>
 </template>
 <style lang="scss" scoped>
     @import "../../style/mixin";
     .link-search {
+
         left: .8rem;
         @include wh(.8rem,.9rem);
         @include ct;
@@ -120,6 +122,7 @@
     import {mapMutations} from 'vuex'
     import {imgBaseUrl} from '../../config/env'
     import headTop from '../../components/header/head'
+    import shopList from '../../components/common/shoplist'
     import {msiteAdress,msiteFoodTypes} from '../../service/getData'
     import { swiper, swiperSlide } from 'vue-awesome-swiper'
     export default({
@@ -154,7 +157,7 @@
             this.hasGetData = true;
         },
         components: {
-            headTop,swiper,swiperSlide
+            headTop,swiper,swiperSlide,shopList
         },
         mounted() {
             // 获取导航食品分类列表
