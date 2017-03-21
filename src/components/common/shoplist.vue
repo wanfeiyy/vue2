@@ -7,7 +7,7 @@
                 </section>
                 <hgroup class="shop-right">
                     <header class="shop-header-detail">
-                        <h4 class="shop-title ellipsis">
+                        <h4 :class="item.is_premium ? 'premium' : ''" class="shop-title ellipsis">
                             {{item.name}}
                         </h4>
                         <ul class="shop-detail-ul">
@@ -16,12 +16,61 @@
                     </header>
                 </hgroup>
             </router-link>
-
         </ul>
     </div>
 </template>
-<style>
+<style lang="scss" scoped>
+    @import "../../style/mixin.scss";
+    .shoplist-container {
+        background-color: #fff;
+        padding-bottom: 2rem;
+    }
+    .shop-li {
+        display: flex;
+        border-bottom: .025rem solid #f1f1f1;
+        padding: .7rem .4rem;
+    }
+    .shop-img {
+        @include wh(2.7rem,2.7rem);
+        display: block;
+        margin-right: .4rem;
+    }
+    .shop-right {
+        flex: auto;
+        .shop-header-detail {
+            @include fj;
+            align-items: center;
+            .shop-title {
+                width: 8.5rem;
+                color: #333;
+                padding-top: .01rem;
+                @include font(0.65rem, 1rem, 'PingFangSC-Regular');
+                font-weight: 700;
+            }
+            .premium::before {
+                content: '品牌';
+                display: inline-block;
+                font-size: .5rem;
+                line-height: .6rem;
+                background-color: #ffd930;
+                padding: 0 0.1rem;
+                border-radius: 0.1rem;
+                margin-right: 0.2rem;
+                vertical-align: top;
+            }
+            .shop-detail-ul {
+                display: flex;
+                .supports {
+                    @include sc(.5rem,#999);
+                    border: .025rem solid #f1f1f1;
+                    padding: .04rem;
+                    border-radius: 0.08rem;
+                    margin-left: 0.05rem;
+                }
+            }
+        }
 
+    }
 </style>
 <script>
     import {mapState} from 'vuex'
