@@ -1,6 +1,6 @@
 <template>
     <div class="shoplist-container">
-        <ul  v-if="shopListArr.length" type="1">
+        <ul v-if="shopListArr.length" type="1">
             <router-link v-for="item in shopListArr" :key="item.id"  :to="{path:'shop',query:{geohash,id:item.id}}" tag='li' class="shop-li">
                 <section>
                     <img :src="getImgPath(item.image_path)" class="shop-img">
@@ -29,9 +29,32 @@
                             <span class="delivery-style delivery_right">准时达</span>
                         </section>
                     </h5>
+                    <h5 class="fee-distance">
+                        <section class="fee">
+                            ￥{{item.float_minimum_order_amount}}起送
+                            <span class="segmentation">/</span>
+                            {{item.piecewise_agent_fee.tips}}
+                        </section>
+                        <section class="distance-time">
+                            <span>{{item.distance > 1000 ?
+                                (item.distance/1000).toFixed(2) + 'km' :
+                                item.distance + 'm'}}
+                                 <span class="segmentation">/</span>
+                            </span>
+                            <span class="order-time">
+                                {{item.order_lead_time}}分钟
+                            </span>
+                        </section>
+                    </h5>
                 </hgroup>
             </router-link>
         </ul>
+        <p v-else class="empty-data">没有更多了</p>
+        <aside class="return-top" @click="backTop" v-if="! showBackStatus">
+            <svg class="back-top-svg">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#backtop"></use>
+            </svg>
+        </aside>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -46,7 +69,7 @@
         padding: .7rem .4rem;
     }
     .shop-img {
-        @include wh(2.7rem,2.7rem);
+        @include wh(2.9rem,2.9rem);
         display: block;
         margin-right: .4rem;
     }
@@ -124,10 +147,39 @@
             }
         }
     }
+    .fee-distance {
+        margin-top: .52rem;
+        @include fj;
+        @include sc(.5rem,#666);
+        .fee {
+            @include sc(0.5rem, #666);
+        }
+        .distance-time {
+            span {
+                color: #999;
+            }
+            .order-time {
+                color: $blue;
+            }
+            .segmentation {
+
+                color: #ccc;
+            }
+        }
+    }
+    .return-top {
+        position: fixed;
+        bottom: 3rem;
+        right: 1rem;
+        .back-top-svg {
+            @include wh(2rem,2rem);
+        }
+    }
 </style>
 <script>
     import {mapState} from 'vuex'
     import ratingStar from './ratingStar'
+    import {animate} from '../../config/mUtils'
     import {shopList} from '../../service/getData'
     import {getImgPath} from './mixin'
     export default {
@@ -135,6 +187,7 @@
             return {
                 shopListArr: [],
                 offset: 0, // 批次加载店铺列表，每次加载20个 limit = 20
+                showBackStatus: false, // 返回顶部按钮
             }
         },
         components: {
@@ -169,7 +222,11 @@
                 let res = await shopList(this.latitude,this.longitude,this.offset,this.restaurantCategoryId);
                 this.shopListArr = [...res];
             },
+            // 返回顶部
+            backTop() {
 
+                animate(document.body,{"scrollTop":0},400,'ease-out')
+            }
         }
 
     }
