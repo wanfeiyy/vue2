@@ -50,11 +50,14 @@
             </router-link>
         </ul>
         <p v-else class="empty-data">没有更多了</p>
-        <aside class="return-top" @click="backTop" v-if="! showBackStatus">
+        <aside class="return-top" @click="backTop" v-if="showBackStatus">
             <svg class="back-top-svg">
                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#backtop"></use>
             </svg>
         </aside>
+        <transition name="loading">
+            <loading v-show="showLoading"></loading>
+        </transition>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -179,19 +182,21 @@
 <script>
     import {mapState} from 'vuex'
     import ratingStar from './ratingStar'
-    import {animate} from '../../config/mUtils'
+    import {animate,showBack} from '../../config/mUtils'
     import {shopList} from '../../service/getData'
     import {getImgPath} from './mixin'
+    import loading from './loading'
     export default {
         data() {
             return {
                 shopListArr: [],
                 offset: 0, // 批次加载店铺列表，每次加载20个 limit = 20
                 showBackStatus: false, // 返回顶部按钮
+                showLoading: true,
             }
         },
         components: {
-            ratingStar
+            ratingStar,loading
         },
         mounted() {
             this.initData()
@@ -221,12 +226,26 @@
             async initData() {
                 let res = await shopList(this.latitude,this.longitude,this.offset,this.restaurantCategoryId);
                 this.shopListArr = [...res];
+                this.hideLoading();
+                showBack(status => {
+                    this.showBackStatus = status;
+                })
             },
             // 返回顶部
             backTop() {
-
                 animate(document.body,{"scrollTop":0},400,'ease-out')
-            }
+            },
+            hideLoading(){
+                if (process.env.NODE_ENV !== 'development') {
+                    clearTimeout(this.timer);
+                    this.timer = setTimeout(() => {
+                        clearTimeout(this.timer);
+                        this.showLoading = false;
+                    }, 500)
+                } else {
+                    this.showLoading = false;
+                }
+            },
         }
 
     }
