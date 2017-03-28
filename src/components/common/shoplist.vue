@@ -1,6 +1,6 @@
 <template>
     <div class="shoplist-container">
-        <ul v-if="shopListArr.length" type="1">
+        <ul v-load-more="loadMore" v-if="shopListArr.length" type="1">
             <router-link v-for="item in shopListArr" :key="item.id"  :to="{path:'shop',query:{geohash,id:item.id}}" tag='li' class="shop-li">
                 <section>
                     <img :src="getImgPath(item.image_path)" class="shop-img">
@@ -55,6 +55,7 @@
                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#backtop"></use>
             </svg>
         </aside>
+        <footer class="loader-more" v-show="preventRepeatReuqest">正在加载更多商家...</footer>
         <transition name="loading">
             <loading v-show="showLoading"></loading>
         </transition>
@@ -184,13 +185,14 @@
     import ratingStar from './ratingStar'
     import {animate,showBack} from '../../config/mUtils'
     import {shopList} from '../../service/getData'
-    import {getImgPath} from './mixin'
+    import {getImgPath,loadMore} from './mixin'
     import loading from './loading'
     export default {
         data() {
             return {
                 shopListArr: [],
                 offset: 0, // 批次加载店铺列表，每次加载20个 limit = 20
+                preventRepeatReuqest: false,
                 showBackStatus: false, // 返回顶部按钮
                 showLoading: true,
             }
@@ -215,7 +217,7 @@
                 }
             }
         },
-        mixins: [getImgPath],
+        mixins: [getImgPath,loadMore],
         computed: {
             ...mapState([
                 'latitude','longitude'
@@ -230,6 +232,9 @@
                 showBack(status => {
                     this.showBackStatus = status;
                 })
+            },
+            loadMore() {
+              console.log(2222);
             },
             // 返回顶部
             backTop() {

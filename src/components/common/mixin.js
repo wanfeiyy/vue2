@@ -22,3 +22,14 @@ export const getImgPath = {
   }
 
 }
+
+export const loadMore = {
+  directives: {
+    'load-more':{
+      bind: (el,binding) => {
+        console.log(el,binding)
+
+      }
+    }
+  }
+}
