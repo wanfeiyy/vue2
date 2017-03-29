@@ -1,6 +1,6 @@
 <template>
     <div class="shoplist-container">
-        <ul v-load-more="loadMore" v-if="shopListArr.length" type="1">
+        <ul v-load-more="loaderMore" v-if="shopListArr.length" type="1">
             <router-link v-for="item in shopListArr" :key="item.id"  :to="{path:'shop',query:{geohash,id:item.id}}" tag='li' class="shop-li">
                 <section>
                     <img :src="getImgPath(item.image_path)" class="shop-img">
@@ -233,8 +233,21 @@
                     this.showBackStatus = status;
                 })
             },
-            loadMore() {
-              console.log(2222);
+            // 到达底部加载更多数据
+            async loaderMore() {
+                if (this.preventRepeatReuqest) return;
+                this.showLoading = true;
+                this.preventRepeatReuqest = true;
+                // 数据的定位加20位
+                this.offset += 20;
+                let res = await shopList(this.latitude,this.longitude,this.offset,this.restaurantCategoryId)
+                this.shopListArr = [...this.shopListArr,...res]
+                this.hideLoading();
+                // 当获取数据小于20，说明没有更多数据，不需要再次请求数据
+                if (res.length < 20) {
+                    return
+                }
+                this.preventRepeatReuqest = false;
             },
             // 返回顶部
             backTop() {
