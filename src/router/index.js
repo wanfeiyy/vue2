@@ -3,6 +3,7 @@ import App from '../App'
 const home = r => require.ensure([], () => r(require('../page/home/home')), 'home')
 const city = r => require.ensure([], () => r(require('../page/city/city')), 'city')
 const msite = r => require.ensure([], () => r(require('../page/msite/msite')), 'msite')
+const food = r => require.ensure([], () => r(require('../page/food/food')), 'food')
 
 export default [{
   path: '/',
@@ -28,5 +29,11 @@ export default [{
       path: '/msite',
       component: msite
     },
+    // 特色商铺列表
+    {
+      path: '/food',
+      component: food
+    }
+
   ]
 }]

@@ -21,6 +21,7 @@ var groupcity = () => fetch('GET', '/v1/cities', {
   type: 'group'
 });
 
+
 /**
  * 获取当前所在城市
  */
@@ -74,6 +75,7 @@ var shopList = (latitude,longitude,offset,restaurant_category_id = '',restaurant
   }
   return fetch('GET','/shopping/restaurants',data);
 }
+
 
 export {
   hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes,shopList,

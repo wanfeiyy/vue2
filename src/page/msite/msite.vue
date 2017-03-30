@@ -17,7 +17,7 @@
                     <!-- slides -->
                     <swiper-slide v-for="(item,index) in foodTypes" :key="index">
                         <div class="swiper-slide food_types_container">
-                            <router-link :to="{path: '/food',query:{geohash, title: foodItem.title, restaurant_category_id: 1}}" v-for="foodItem in item" :key="foodItem.id" class="link_to_food" v-if="foodItem.title !== '预订早餐'">
+                            <router-link :to="{path: '/food',query:{geohash, title: foodItem.title, restaurant_category_id: getCategoryId(foodItem.link)}}" v-for="foodItem in item" :key="foodItem.id" class="link_to_food" v-if="foodItem.title !== '预订早餐'">
                                 <figure>
                                     <img :src="imgBaseUrl + foodItem.image_url">
                                     <figcaption>{{foodItem.title}}</figcaption>
@@ -174,7 +174,17 @@
         methods: {
             ...mapMutations([
                 'RECORD_ADDRESS', 'SAVE_GEOHASH'
-            ])
+            ]),
+            // 解码url
+            getCategoryId(url) {
+                let urlData = decodeURIComponent(url.split('=')[1].replace('&target_name',''));
+                if (/restaurant_category_id/gi.test(urlData)) {
+                    return JSON.parse(urlData).restaurant_category_id.id;
+                } else {
+                    return '';
+                }
+            }
+
         }
     })
 </script>
