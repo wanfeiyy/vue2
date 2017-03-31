@@ -76,7 +76,16 @@ var shopList = (latitude,longitude,offset,restaurant_category_id = '',restaurant
   return fetch('GET','/shopping/restaurants',data);
 }
 
+/**
+ * 获取food页面的 category 种类列表
+ */
+
+var foodCategory = (latitude,longitude) => fetch('GET','/shopping/v2/restaurant/category',{
+  latitude,
+  longitude
+})
+
 
 export {
-  hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes,shopList,
+  hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes,shopList,foodCategory
 }
