@@ -2,8 +2,8 @@
     <div class="food-container">
         <head-top :goBack="true" :head-title="headTitle"></head-top>
         <section class="sort-container">
-            <div class="sort-item" :class="{choose_type:sortBy == 'food'}">
-                <div class="sort-item-container">
+            <div class="sort-item" :class="{choose_type:sortBy == 'food'}" >
+                <div class="sort-item-container" @click="chooseType('food')">
                     <div class="sort-item-border">
                         <span :class="{category_title:sortBy == 'food'}">
                             {{foodTitle}}
@@ -19,7 +19,8 @@
                     <section class="category-left">
                         <ul>
                             <li v-for="(item,index) in category" :key="index"
-                                class="category-left-li" :class="{category_active:restaurant_category_id == item.id}" >
+                                class="category-left-li"  @click="selectCategoryName(item.id, index)"
+                                :class="{category_active:restaurant_category_id == item.id}" >
                                 <section>
                                     <img :src="getImgPath(item.image_url)" v-if="index" class="category-icon">
                                     <span>{{item.name}}</span>
@@ -33,6 +34,16 @@
                             </li>
                         </ul>
                     </section>
+                    <section class="category-right">
+                        <ul>
+                            <li v-for="(item,index) in categoryDetail" :key="item.id"
+                                class="category-right-li" @click="getCategoryIds(item.id,item.name)"
+                                :class="{category_right_choosed: restaurant_category_ids == item.id || (!restaurant_category_ids)&&index == 0}">
+                                <span>{{item.name}}</span>
+                                <span>{{item.count}}</span>
+                            </li>
+                        </ul>
+                    </section>
                 </section>
             </transition>
         </section>
@@ -43,6 +54,7 @@
     .food-container {
         padding-top: 3.6rem;
     }
+
     .sort-container {
         background-color: #fff;
         border-bottom: .025rem solid #f1f1f1;
@@ -131,11 +143,34 @@
                         vertical-align: middle;
                     }
                 }
-            }
-            .category_active {
-                background-color: #fff;
+                .category_active {
+                    background-color: #fff;
+                }
             }
 
+            .category-right {
+                flex: 1;
+                background-color: #fff;
+                padding-left: .5rem;
+                height: 16rem;
+                overflow-y: auto;
+                .category-right-li {
+                    @include fj;
+                    height: 1.8rem;
+                    line-height: 1.8rem;
+                    padding-right: .5rem;
+                    border-bottom: .025rem solid $bc;
+                    span {
+                        @include sc(.55rem,#666);
+                    }
+
+                }
+                .category_right_choosed{
+                    span{
+                        color: $blue;
+                    }
+                }
+            }
         }
     }
 
@@ -151,8 +186,10 @@
                 foodTitle: '', // 排序左侧头部标题
                 headTitle: '', // 标题
                 restaurant_category_id: '', // 食品类型id值
+                restaurant_category_ids: '', // 筛选类型的id
                 sortBy: '', // 筛选的条件
                 category: null,// category分类左侧数据
+                categoryDetail: []
             }
         },
         computed: {
@@ -185,9 +222,48 @@
                 }
                 // 获取category分类左侧数据
                 this.category = await foodCategory(this.latitude,this.longitude);
+                this.category.forEach(item => {
+                    if (this.restaurant_category_id == item.id) {
+                        this.categoryDetail = item.sub_categories;
+                    }
+                })
+            },
+            //选中Category右侧列表的某个选项时，进行筛选，重新获取数据并渲染
+            getCategoryIds(id, name) {
+                this.restaurant_category_id = id;
+                this.sortBy = '';
+                this.foodTitle = this.headTitle = name;
+            },
+            //选中Category左侧列表的某个选项时，右侧渲染相应的sub_categories列表
+            selectCategoryName(id,index) {
+                // 第一个选项 -- 全部商家 因为没有自己的列表，所以点击则默认获取选所有数据
+                if (index == 0) {
+                    this.restaurant_category_ids = '';
+                    this.sortBy = '';
+                } else {
+                    this.restaurant_category_id = id;
+                    this.categoryDetail = this.category[index].sub_categories;
+                }
+
+            },
+            // 点击顶部三个选项，展示不同的列表，选中当前选项进行展示，同时收回其他选项
+            async chooseType(type) {
+                if (this.sortBy !== type) {
+                    this.sortBy = type;
+                    if (type == 'food') {
+                        this.headTitle = '分类';
+                    } else {
+                        this.foodTitle = this.headTitle;
+                    }
+                } else {
+                    // 再次点击相同选项时收回列表
+                    this.sortBy = '';
+                    if (type == 'food') {
+                        //将foodTitle 和 headTitle 进行同步
+                        this.foodTitle = this.headTitle;
+                    }
+                }
             }
-
         }
-
     }
 </script>
