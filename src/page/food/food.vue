@@ -46,6 +46,90 @@
                     </section>
                 </section>
             </transition>
+            <div class="sort-item" :class="{choose_type:sortBy == 'sort'}">
+                <div class="sort-item-container" @click="chooseType('sort')">
+                    <div class="sort-item-border">
+                        <span :class="{category_title:sortBy == 'sort'}">
+                            排序
+                        </span>
+                        <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" version="1.1" class="sort-icon">
+                            <polygon points="0,3 10,3 5,8"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <transition name="showList">
+                <section v-show="sortBy == 'sort'" class="sort-detail-type">
+                    <ul class="sort-list-container" @click="sortList($event)">
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#default"></use>
+                            </svg>
+                            <p data="0" :class="{sort_select:sortByType == 0}">
+                                <span>智能排序</span>
+                                <svg v-if="sortByType == 0">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#distance"></use>
+                            </svg>
+                            <p data="5" :class="{sort_select: sortByType == 5}">
+                                <span>距离最近</span>
+                                <svg v-if="sortByType == 5">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#hot"></use>
+                            </svg>
+                            <p data="6" :class="{sort_select: sortByType == 6}">
+                                <span>销量最高</span>
+                                <svg v-if="sortByType == 6">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#price"></use>
+                            </svg>
+                            <p data="1" :class="{sort_select: sortByType == 1}">
+                                <span>起送价最低</span>
+                                <svg v-if="sortByType == 1">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#speed"></use>
+                            </svg>
+                            <p data="2" :class="{sort_select: sortByType == 2}">
+                                <span>配送速度最快</span>
+                                <svg v-if="sortByType == 2">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                        <li class="sort-list-li">
+                            <svg>
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rating"></use>
+                            </svg>
+                            <p data="3" :class="{sort_select: sortByType == 3}">
+                                <span>评分最高</span>
+                                <svg v-if="sortByType == 3">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                </svg>
+                            </p>
+                        </li>
+                    </ul>
+                </section>
+            </transition>
         </section>
     </div>
 </template>
@@ -99,10 +183,16 @@
                 }
             }
         }
+        .showList-enter-active, .showList-leave-active {
+            transition: all .6s;
+            transform: translateY(0);
+        }
         .showList-enter, .showList-leave-active {
             opacity: 0;
+            transition: all .6s;
             transform: translateY(-100%);
         }
+
         .sort-detail-type {
             width: 100%;
             position: absolute;
@@ -172,6 +262,38 @@
                 }
             }
         }
+
+        .sort-list-container {
+            width: 100%;
+            .sort-list-li {
+                height: 2.5rem;
+                display: flex;
+                align-items: center;
+                svg {
+                    @include wh(0.7rem, 0.7rem);
+                    margin: 0 .3rem 0 .8rem;
+                }
+                p {
+                    line-height: 2.5rem;
+                    flex: auto;
+                    text-align: left;
+                    text-indent: .25rem;
+                    border-bottom: 0.025rem solid $bc;
+                    @include fj;
+                    align-items: center;
+                    span {
+                        color: #666;
+                        font-size: .55rem;
+
+                    }
+                    .sort_select{
+                        span{
+                            color: $blue;
+                        }
+                    }
+                }
+            }
+        }
     }
 
 </style>
@@ -187,6 +309,7 @@
                 headTitle: '', // 标题
                 restaurant_category_id: '', // 食品类型id值
                 restaurant_category_ids: '', // 筛选类型的id
+                sortByType: null, // 根据何种方式排序
                 sortBy: '', // 筛选的条件
                 category: null,// category分类左侧数据
                 categoryDetail: []
@@ -240,6 +363,7 @@
                 if (index == 0) {
                     this.restaurant_category_ids = '';
                     this.sortBy = '';
+                    this.foodTitle = this.headTitle
                 } else {
                     this.restaurant_category_id = id;
                     this.categoryDetail = this.category[index].sub_categories;
@@ -251,7 +375,7 @@
                 if (this.sortBy !== type) {
                     this.sortBy = type;
                     if (type == 'food') {
-                        this.headTitle = '分类';
+                        this.foodTitle = '分类';
                     } else {
                         this.foodTitle = this.headTitle;
                     }
@@ -263,6 +387,15 @@
                         this.foodTitle = this.headTitle;
                     }
                 }
+            },
+            sortList(event) {
+                if (event.target.hasAttribute('data')) {
+                    this.sortByType = event.target.getAttribute('data')
+                } else {
+                    this.sortByType =  event.target.parentNode.getAttribute('data')
+                }
+
+                this.sortBy = '';
             }
         }
     }
