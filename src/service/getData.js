@@ -86,6 +86,36 @@ var foodCategory = (latitude,longitude) => fetch('GET','/shopping/v2/restaurant/
 })
 
 
+/**
+ * 获取food页面的配送方式
+ */
+var foodDelivery = (latitude,longitude) => fetch('GET','/shopping/v1/restaurants/delivery_modes',{
+  latitude,
+  longitude,
+  kw: '',
+})
+
+/**
+ * 获取food页面的商家属性活动列表
+ */
+
+var foodActivity = (latitude,longitude) => fetch('GET','/shopping/v1/restaurants/activity_attributes',{
+  latitude,
+  longitude,
+  kw: '',
+})
+
+
 export {
-  hotcity,cityGuess,groupcity,currentcity,searchplace,msiteAdress,msiteFoodTypes,shopList,foodCategory
+  hotcity,
+  cityGuess,
+  groupcity,
+  currentcity,
+  searchplace,
+  msiteAdress,
+  msiteFoodTypes,
+  shopList,
+  foodCategory,
+  foodDelivery,
+  foodActivity,
 }

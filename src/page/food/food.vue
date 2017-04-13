@@ -13,8 +13,8 @@
                         </svg>
                     </div>
                 </div>
-            </div>
-            <transition name="showList" v-show="category">
+
+                 <transition name="showList" v-show="category">
                 <section v-show="sortBy == 'food'" class="category-container sort-detail-type">
                     <section class="category-left">
                         <ul>
@@ -46,6 +46,7 @@
                     </section>
                 </section>
             </transition>
+            </div>
             <div class="sort-item" :class="{choose_type:sortBy == 'sort'}">
                 <div class="sort-item-container" @click="chooseType('sort')">
                     <div class="sort-item-border">
@@ -57,8 +58,7 @@
                         </svg>
                     </div>
                 </div>
-            </div>
-            <transition name="showList">
+                 <transition name="showList">
                 <section v-show="sortBy == 'sort'" class="sort-detail-type">
                     <ul class="sort-list-container" @click="sortList($event)">
                         <li class="sort-list-li">
@@ -130,6 +130,33 @@
                     </ul>
                 </section>
             </transition>
+            </div>
+            <div class="sort-item" :class="{choose_type:sortBy == 'activity'}">
+                <div class="sort-item-container" @click="chooseType('activity')">
+                    <span :class="{category_title:sortBy == 'activity'}">
+                            筛选
+                    </span>
+                    <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" version="1.1" class="sort-icon">
+                            <polygon points="0,3 10,3 5,8"/>
+                    </svg>
+                </div>
+                <transition name="showList">
+                    <section v-show="sortBy == 'activity'" class="sort-detail-type filter-container">
+                        <section style="width:100%">
+                            <header class="filter-header-style">配送方式</header>
+                            <ul class="filter-ul">
+                                <li v-for="item in delivery" :key=item.id class="filter-li"
+                                    @click="selectDeliveryMode(item.id)">
+                                    <svg :style="{opacity: (item.id == 0)&&(delivery_mode !== 0)? 0: 1}">
+                                        <use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="delivery_mode == item.id? '#selected':'#fengniao'"></use>
+                                    </svg>
+                                    <span :class="{selected_filter: delivery_mode == item.id}">{{item.text}}</span>
+                                </li>
+                            </ul>
+                        </section>
+                    </section>
+                </transition>
+            </div>
         </section>
     </div>
 </template>
@@ -294,13 +321,52 @@
                 }
             }
         }
+
+        .filter-container {
+            flex-direction: column;
+            align-items: flex-start;
+            min-height: 10.6rem;
+            background-color: #f1f1f1;
+            .filter-header-style {
+                @include sc(0.4rem, #333);
+                line-height: 1.5rem;
+                height: 1.5rem;
+                text-align: left;
+                padding-left: .5rem;
+                background-color: #fff;
+            }
+            .filter-ul {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 0 .5rem;
+                background: #fff;
+                .filter-li {
+                    display: flex;
+                    align-items: center;
+                    border: 0.025rem solid #eee;
+                    @include wh(4.7rem, 1.4rem);
+                    margin-right: .25rem;
+                    border-radius: .125rem;
+                    padding: 0 .25rem;
+                    margin-bottom: .25rem;
+                    svg{
+                        @include wh(.8rem, .8rem);
+                        margin-right: 0.125rem;
+                    }
+                    span{
+                        @include sc(0.4rem, #333);
+                    }
+
+                }
+            }
+        }
     }
 
 </style>
 <script>
     import {mapState,mapMutations} from 'vuex'
     import headTop from '../../components/header/head'
-    import {foodCategory,msiteAdress} from  '../../service/getData'
+    import {foodCategory,msiteAdress,foodDelivery,foodActivity} from  '../../service/getData'
     import {getImgPath} from '../../components/common/mixin'
     export default {
         data() {
@@ -312,7 +378,12 @@
                 sortByType: null, // 根据何种方式排序
                 sortBy: '', // 筛选的条件
                 category: null,// category分类左侧数据
-                categoryDetail: []
+                categoryDetail: [],
+                delivery: null, // 配送方式数据
+                activity: null, // 商家支持活动数据
+                delivery_mode: null, // 选中的配送方式
+                support_ids: [], // 选中的商铺活动列表
+                filterNum: 0, // 所选中的所有样式的集合
             }
         },
         computed: {
@@ -348,6 +419,15 @@
                 this.category.forEach(item => {
                     if (this.restaurant_category_id == item.id) {
                         this.categoryDetail = item.sub_categories;
+                    }
+                })
+                //获取筛选列表的配送方式
+                this.delivery = await foodDelivery(this.latitude,this.longitude);
+                this.activity = await foodActivity(this.latitude,this.longitude);
+                this.activity.forEach((item,index) => {
+                    this.support_ids[index] = {
+                        status: false,
+                            id: item.id,
                     }
                 })
             },
@@ -388,6 +468,7 @@
                     }
                 }
             },
+
             sortList(event) {
                 if (event.target.hasAttribute('data')) {
                     this.sortByType = event.target.getAttribute('data')
@@ -396,7 +477,37 @@
                 }
 
                 this.sortBy = '';
-            }
+            },
+
+            // 筛选选项中的配送方式选择
+            selectDeliveryMode(id) {
+                console.log(this.delivery_mode ,id,this.filterNum)
+                // delivery_mode为空时，选中当前项，并且filterNum加一
+                if (this.delivery_mode === null) {
+                    this.filterNum ++;
+                    this.delivery_mode = id;
+                // delivery_mode为当前已有值时，清空所选项，并且filterNum减一
+                } else if(this.delivery_mode == id) {
+                    this.filterNum --;
+                    this.delivery_mode = null;
+                // delivery_mode已有值且不等于当前选择值，则赋值delivery_mode为当前所选id
+                } else {
+                    this.delivery_mode = id;
+                }
+
+            },
+
+            // 点击商家活动，状态取反
+            selectSupportIds(index,id) {
+                // 数组替换新的值
+                this.support_ids.splice(index, 1, {status: !this.support_ids[index].status, id: id});
+                this.filterNum = this.delivery_mode == null ? 0 : 1;
+                this.support_ids.forEach(item => {
+                    if (status) {
+                        this.filterNum ++ ;
+                    }
+                })
+            },
         }
     }
 </script>
