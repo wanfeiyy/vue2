@@ -154,6 +154,29 @@
                                 </li>
                             </ul>
                         </section>
+                        <section style="width:100%">
+                            <header class="filter-header-style">商家属性（可以多选）</header>
+                            <ul class="filter-ul" style="paddingBottom:.5rem">
+                                <li v-for="(item,index) in activity" :key="item.id" class="filter-li"
+                                    @click="selectSupportIds(index,item.id)">
+                                    <svg v-show="support_ids[index].status" class="activity-svg">
+                                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
+                                    </svg>
+                                    <span class="filter-icon" :style="{color:'#' + item.icon_color,borderColor: '#' + item.icon_color}"
+                                          v-show="! support_ids[index].status">
+                                        {{item.icon_name}}
+                                    </span>
+                                    <span :class="{selected_filter: support_ids[index].status}">{{item.name}}</span>
+
+                                </li>
+                            </ul>
+                        </section>
+                        <footer class="confirm-filter">
+                            <div class="clear-all filter-button-style" @click="clearAll">清空</div>
+                            <div class="confirm-select filter-button-style" @click="confirmSelectFun">
+                            确定<span v-show="filterNum">({{filterNum}})</span>
+                        </div>
+                        </footer>
                     </section>
                 </transition>
             </div>
@@ -356,7 +379,47 @@
                     span{
                         @include sc(0.4rem, #333);
                     }
+                    .filter-icon {
+                        @include wh(.8rem,.8rem);
+                        font-size: .5rem;
+                        border: 0.025rem solid $bc;
+                        border-radius: 0.15rem;
+                        margin-right: .25rem;
+                        line-height: .8rem;
+                        text-align: center;
+                    }
+                    .activity-svg{
+                        margin-right: .25rem;
+                    }
+                    .selected_filter{
+                        color: $blue;
+                    }
 
+                }
+            }
+            .confirm-filter {
+                display: flex;
+                background-color: #f1f1f1;
+                width: 100%;
+                padding: .3rem .2rem;
+                .filter-button-style {
+                    @include wh(50%,1.8rem);
+                    font-size: .8rem;
+                    line-height: 1.8rem;
+                    border-radius: .2rem;
+                }
+                .clear-all {
+                    background-color: #fff;
+                    margin-right: .5rem;
+                    border: .025rem solid #fff;
+                }
+                .confirm-select{
+                    background-color: #56d176;
+                    color: #fff;
+                    border: 0.025rem solid #56d176;
+                    span{
+                        color: #fff;
+                    }
                 }
             }
         }
@@ -384,6 +447,7 @@
                 delivery_mode: null, // 选中的配送方式
                 support_ids: [], // 选中的商铺活动列表
                 filterNum: 0, // 所选中的所有样式的集合
+                confirmStatus: false, // 确认选择
             }
         },
         computed: {
@@ -427,7 +491,7 @@
                 this.activity.forEach((item,index) => {
                     this.support_ids[index] = {
                         status: false,
-                            id: item.id,
+                        id: item.id,
                     }
                 })
             },
@@ -500,14 +564,25 @@
             // 点击商家活动，状态取反
             selectSupportIds(index,id) {
                 // 数组替换新的值
-                this.support_ids.splice(index, 1, {status: !this.support_ids[index].status, id: id});
+                this.support_ids.splice(index, 1, {status: ! this.support_ids[index].status, id: id});
                 this.filterNum = this.delivery_mode == null ? 0 : 1;
                 this.support_ids.forEach(item => {
-                    if (status) {
+                    if (item.status) {
                         this.filterNum ++ ;
                     }
                 })
             },
+            clearAll() {
+                this.delivery_mode = null;
+                this.support_ids.map(item => item.status = false)
+                this.filterNum = 0;
+            },
+            // 点击确认时，将需要筛选的id值传递给子组件，并且收回列表
+            confirmSelectFun() {
+                //状态改变时，因为子组件进行了监听，会重新获取数据进行筛选
+                this.confirmStatus = ! this.confirmStatus;
+                this.sortBy = '';
+            }
         }
     }
 </script>
