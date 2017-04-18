@@ -181,6 +181,16 @@
                 </transition>
             </div>
         </section>
+        <transition name="showcover">
+            <div class="back-cover" v-show="sortBy"></div>
+        </transition>
+        <section class="shop-list-container">
+            <shop-list :geohash="geohash" :restaurantCategoryId="restaurant_category_id"
+                       :restaurantCategoryIds="restaurant_category_ids" :sortByType='sortByType'
+                       :delivery_mode="delivery_mode" :confirmSelect="confirmStatus"
+                       :supportIds="support_ids" v-if="latitude"  @DidConfrim="clearAll">
+            </shop-list>
+        </section>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -188,7 +198,6 @@
     .food-container {
         padding-top: 3.6rem;
     }
-
     .sort-container {
         background-color: #fff;
         border-bottom: .025rem solid #f1f1f1;
@@ -425,10 +434,23 @@
         }
     }
 
+    .showcover-enter-active,.showcover-leave-active {
+        transition: opacity .3s;
+    }
+    .showcover-enter, .showcover-leave-active {
+        opacity: 0
+    }
+    .back-cover {
+        position: fixed;
+        @include wh(100%,100%);
+        z-index: 10;
+        background: rgba(0,0,0,.3);
+    }
 </style>
 <script>
     import {mapState,mapMutations} from 'vuex'
     import headTop from '../../components/header/head'
+    import shopList from '../../components/common/shoplist'
     import {foodCategory,msiteAdress,foodDelivery,foodActivity} from  '../../service/getData'
     import {getImgPath} from '../../components/common/mixin'
     export default {
@@ -459,7 +481,7 @@
             this.initData();
         },
         components: {
-            headTop,
+            headTop,shopList
         },
         mixins: [getImgPath],
         methods: {
@@ -470,7 +492,7 @@
                 this.headTitle = this.$route.query.title;
                 this.foodTitle = this.headTitle;
                 this.geohash = this.$route.query.geohash;
-                this.restaurant_category_id = this.$route.query.restaurant_category_id;
+                this.restaurant_category_id = this.$route.query.restaurant_category_id + '';
                 //防止刷新页面时，vuex状态丢失，经度纬度需要重新获取，并存入vuex
                 if (!this.latitude) {
                     //获取位置信息
@@ -497,7 +519,7 @@
             },
             //选中Category右侧列表的某个选项时，进行筛选，重新获取数据并渲染
             getCategoryIds(id, name) {
-                this.restaurant_category_id = id;
+                this.restaurant_category_id = id + '';
                 this.sortBy = '';
                 this.foodTitle = this.headTitle = name;
             },
@@ -509,7 +531,7 @@
                     this.sortBy = '';
                     this.foodTitle = this.headTitle
                 } else {
-                    this.restaurant_category_id = id;
+                    this.restaurant_category_id = id + '';
                     this.categoryDetail = this.category[index].sub_categories;
                 }
 

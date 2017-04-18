@@ -215,6 +215,36 @@
                 default() {
                     return ''
                 }
+            },
+            restaurantCategoryIds: {
+                type: String,
+                default() {
+                    return ''
+                }
+            },
+            sortByType: {
+                type: String,
+                default() {
+                    return ''
+                }
+            },
+            deliveryMode: {
+                type: String,
+                default() {
+                    return ''
+                }
+            },
+            supportIds: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
+            confirmSelect: {
+                "type": Boolean,
+                default() {
+                    return false
+                }
             }
         },
         mixins: [getImgPath,loadMore],
@@ -253,6 +283,7 @@
             backTop() {
                 animate(document.body,{"scrollTop":0},400,'ease-out')
             },
+            // 开发环境与编译环境loading隐藏方式不同
             hideLoading(){
                 if (process.env.NODE_ENV !== 'development') {
                     clearTimeout(this.timer);
@@ -263,6 +294,29 @@
                 } else {
                     this.showLoading = false;
                 }
+            },
+            async listenPropChange() {
+                this.showLoading = true;
+                this.offset = 0;
+                let res = await shopList(this.latitude, this.longitude, this.offset, '',
+                                         this.restaurantCategoryIds, this.sortByType,
+                                         this.deliveryMode, this.supportIds);
+                this.hideLoading();
+                // 考虑到本地模拟数据是引用类型，所以返回一个新的数组
+                this.shopListArr = [...res];
+                if (process.env.NODE_ENV !== 'development') {
+                    this.shopListArr = this.shopListArr.reverse();
+                }
+            }
+        },
+        watch: {
+            // 监听父级传来的restaurantCategoryIds，当值发生变化的时候重新获取餐馆数据，作用于排序和筛选
+            restaurantCategoryIds: value => {
+                this.listenPropChange();
+            },
+            // 监听父级传来的排序方式
+            sortByType: function (value){
+                this.listenPropChange();
             },
         }
 
