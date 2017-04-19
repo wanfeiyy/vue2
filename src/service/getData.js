@@ -105,6 +105,14 @@ var foodActivity = (latitude,longitude) => fetch('GET','/shopping/v1/restaurants
   kw: '',
 })
 
+/**
+ * 获取shop页面商铺详情
+ */
+var shopDetails = (shopid,latitude, longitude) => fetch('GET','/shopping/restaurant/' + shopid,{
+  latitude,
+  longitude: longitude + '&extras[]=activities&extras[]=album&extras[]=license&extras[]=identification&extras[]=statistics'
+})
+
 
 export {
   hotcity,
@@ -118,4 +126,5 @@ export {
   foodCategory,
   foodDelivery,
   foodActivity,
+  shopDetails,
 }

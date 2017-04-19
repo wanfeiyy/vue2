@@ -187,7 +187,7 @@
         <section class="shop-list-container">
             <shop-list :geohash="geohash" :restaurantCategoryId="restaurant_category_id"
                        :restaurantCategoryIds="restaurant_category_ids" :sortByType='sortByType'
-                       :delivery_mode="delivery_mode" :confirmSelect="confirmStatus"
+                       :deliveryMode="delivery_mode" :confirmSelect="confirmStatus"
                        :supportIds="support_ids" v-if="latitude"  @DidConfrim="clearAll">
             </shop-list>
         </section>
@@ -456,6 +456,7 @@
     export default {
         data() {
             return {
+                geohash: '',
                 foodTitle: '', // 排序左侧头部标题
                 headTitle: '', // 标题
                 restaurant_category_id: '', // 食品类型id值
@@ -519,7 +520,7 @@
             },
             //选中Category右侧列表的某个选项时，进行筛选，重新获取数据并渲染
             getCategoryIds(id, name) {
-                this.restaurant_category_id = id + '';
+                this.restaurant_category_ids = id + '';
                 this.sortBy = '';
                 this.foodTitle = this.headTitle = name;
             },
@@ -571,16 +572,15 @@
                 // delivery_mode为空时，选中当前项，并且filterNum加一
                 if (this.delivery_mode === null) {
                     this.filterNum ++;
-                    this.delivery_mode = id;
+                    this.delivery_mode = id + '';
                 // delivery_mode为当前已有值时，清空所选项，并且filterNum减一
                 } else if(this.delivery_mode == id) {
                     this.filterNum --;
                     this.delivery_mode = null;
                 // delivery_mode已有值且不等于当前选择值，则赋值delivery_mode为当前所选id
                 } else {
-                    this.delivery_mode = id;
+                    this.delivery_mode = id + '';
                 }
-
             },
 
             // 点击商家活动，状态取反

@@ -4,6 +4,7 @@ const home = r => require.ensure([], () => r(require('../page/home/home')), 'hom
 const city = r => require.ensure([], () => r(require('../page/city/city')), 'city')
 const msite = r => require.ensure([], () => r(require('../page/msite/msite')), 'msite')
 const food = r => require.ensure([], () => r(require('../page/food/food')), 'food')
+const shop = r => require.ensure([], () => r(require('../page/shop/shop')), 'shop')
 
 export default [{
   path: '/',
@@ -33,7 +34,11 @@ export default [{
     {
       path: '/food',
       component: food
+    },
+    // 商铺详情页
+    {
+      path: '/shop',
+      component: shop,
     }
-
   ]
 }]
