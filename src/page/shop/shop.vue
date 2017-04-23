@@ -19,13 +19,13 @@
                             <p class="description-promotion ellipsis">
                                 公告：{{promotionInfo}}
                             </p>
+                            <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" version="1.1"
+                                 class="description-arrow">
+                                <path d="M0 0 L8 7 L0 14" stroke="#fff" stroke-width="1" fill="none"/>
+                            </svg>
                         </section>
-                        <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" version="1.1"
-                             class="description-arrow">
-                            <path d="M0 0 L8 7 L0 14" stroke="#fff" stroke-width="1" fill="none"/>
-                        </svg>
                     </router-link>
-                    <footer class="description-footer" v-if="shopDetailData.activities.length">
+                    <footer class="description-footer" v-if="shopDetailData.activities.length" @click="showActivitiesFun">
                         <p class="ellipsis">
                             <span class="tip-icon"
                                   :style="{backgroundColor: '#' + shopDetailData.activities[0].icon_color, borderColor: '#' + shopDetailData.activities[0].icon_color}">
@@ -35,21 +35,64 @@
                                 {{shopDetailData.activities[0].description}}（APP专享）
                             </span>
                         </p>
-                        <p>
-                            {{shopDetailData.activities.length}}个活动
-                        </p>
+                        <p> {{shopDetailData.activities.length}}个活动 </p>
+
                         <svg class="footer-arrow">
                             <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-left"></use>
                         </svg>
                     </footer>
                 </section>
             </header>
+            <transition name="fade">
+                <section class="activities-details" v-if="showActivities">
+                    <h2 class="activities-shoptitle">{{shopDetailData.name}}</h2>
+                    <h3 class="activities-ratingstar">
+                        <rating-star :rating="shopDetailData.rating"></rating-star>
+                    </h3>
+                    <section class="activities-list">
+                        <header class="activities-title-style"><span>优惠信息</span></header>
+                        <ul>
+                            <li v-for="item in shopDetailData.activities" :key="item.id">
+                                <span class="activities-icon" :style="{backgroundColor:'#' + item.icon_color,borderColor:'#' + item.icon_color}">
+                                    {{item.icon_name}}
+                                </span>
+                                <span>{{item.description}}（APP专享）</span>
+                            </li>
+                        </ul>
+                    </section>
+                    <section class="activities-shopinfo">
+                        <header class="activities-title-style"><span>商家公告</span></header>
+                        <p>{{promotionInfo}}</p>
+                    </section>
+                    <svg width="60" height="60" class="close-activities" @click.stop="showActivitiesFun">
+                        <circle cx="30" cy="30" r="25" stroke="#555" stroke-width="1" fill="none"/>
+                        <line x1="22" y1="38" x2="38" y2="22" style="stroke:#999;stroke-width:2"/>
+                        <line x1="22" y1="22" x2="38" y2="38" style="stroke:#999;stroke-width:2"/>
+                    </svg>
+                </section>
+            </transition>
+            <section class="change-show-type" ref="chooseType">
+                <div>
+                    <span :class="{activity_show:changeShowType == 'food'}"
+                          @click="changeShowType='food'">
+                        商品
+                    </span>
+                </div>
+                <div>
+                    <span :class="{activity_show:changeShowType == 'rating'}"
+                          @click="changeShowType='rating'">
+                        评价
+                    </span>
+                </div>
+            </section>
+
         </section>
     </div>
 </template>
 <script>
     import {mapState, mapMutations} from 'vuex'
     import {shopDetails,msiteAdress} from '../../service/getData'
+    import ratingStar from '../../components/common/ratingStar'
     import {getImgPath} from '../../components/common/mixin'
     export default{
         data() {
@@ -57,9 +100,13 @@
                 geohash: '', //geohash位置信息
                 shopId: null, //商店id值
                 shopDetailData: null, //商铺详情
+                changeShowType: 'food',//切换显示商品或者评价
                 showActivities: false, //是否显示活动详情
                 windowHeight: null, //屏幕的高度
             }
+        },
+        components: {
+            ratingStar,
         },
         created() {
             console.log('created');
@@ -68,8 +115,8 @@
         },
         mounted() {
             console.log('mounted');
-            this.windowHeight = window.innerHeight;
             this.initData();
+            this.windowHeight = window.innerHeight;
         },
         mixins: [getImgPath],
         computed: {
@@ -95,6 +142,16 @@
                 //获取商铺信息
                 this.shopDetailData = await shopDetails(this.shopId, this.latitude, this.longitude);
 
+            },
+            // 控制活动详情页的显示隐藏
+            showActivitiesFun(){
+                this.showActivities = ! this.showActivities;
+            },
+            // 商品、评论切换状态
+            changeShowType: value => {
+                if (value === 'rating') {
+
+                }
             }
         }
     }
@@ -108,7 +165,6 @@
         top: 0;
         left: 0;
         z-index: 9;
-        filter: blur(10px);
     }
     .shop-detail-header {
         overflow: hidden;
@@ -154,9 +210,10 @@
                         @include sc(.5rem, #fff);
                         width: 11.5rem;
                     }
-                    .description_arrow {
+                    .description-arrow {
                         @include ct;
                         right: 0.3rem;
+                        z-index: 11;
                     }
                 }
             }
@@ -180,12 +237,91 @@
                 .ellipsis {
                     width: 84%;
                 }
-                .footer_arrow{
+                .footer-arrow{
                     @include wh(.45rem, .45rem);
                     position: absolute;
                     right: .3rem;
                 }
 
+            }
+        }
+    }
+
+    .activities-details {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #262626;
+        z-index: 200;
+        padding: 1.125rem;
+        .activities-shoptitle {
+            text-align: center;
+            @include sc(.8rem,#fff);
+        }
+        .activities-ratingstar {
+            display: flex;
+            justify-content: center;
+            transform: scale(2.2);
+            margin-top: .7rem;
+        }
+        .activities-list {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            @include sc(.5rem,#fff);
+            li {
+                margin-bottom: .2rem;
+                .activities-icon {
+                    padding: 0 .2rem;
+                    display: inline-block;
+                    border: .025rem solid #fff;
+                    border-radius: .1rem;
+                };
+                span {
+                    color: #fff;
+                    line-height: .6rem;
+                }
+            }
+        }
+        .activities-shopinfo {
+            p {
+                line-height: .7rem;
+                @include sc(.5rem,#fff)
+            }
+        }
+        .activities-title-style {
+            text-align: center;
+            margin-bottom: 1rem;
+            span {
+                @include sc(.5rem,#fff);
+                border: 0.025rem solid #555;
+                padding: .2rem .4rem;
+                border-radius: 0.5rem;
+            }
+        }
+        .close-activities {
+            bottom: 1rem;
+            @include cl;
+        }
+    }
+
+    .change-show-type {
+        display: flex;
+        background-color: #fff;
+        padding: .3rem .6rem;
+        border: 1px solid #ebebeb;
+        div {
+            flex: 1;
+            text-align: center;
+            span {
+                @include sc(.65rem,#666);
+                padding: .2rem .1rem;
+                border-bottom: 0.12rem solid #fff;
+            }
+            .activity_show {
+                color: #3190e8;
+                border-color: #3190e8;
             }
         }
     }
