@@ -85,13 +85,45 @@
                     </span>
                 </div>
             </section>
-
+            <transition name="fade-choose">
+                <section v-show="changeShowType === 'food'" class="food-container">
+                    <section class="menu-container">
+                        <section class="menu-left" id="wrapper-menu">
+                            <ul>
+                                <li v-for="(item,index) in menuList" :key="index" class="menu-left-li"
+                                    :class="{activity_menu:index == menuIndex}" @click="chooseMenu(index)">
+                                    <img :src="getImgPath(item.icon_url)" v-if="item.icon_url">
+                                    <span>{{item.name}}</span>
+                                    <span class="category-num" v-if="categoryNum[index] && item.type == 1">{{categoryNum[index]}}</span>
+                                </li>
+                            </ul>
+                        </section>
+                        <section class="menu-right" ref="menuFoodList">
+                            <ul>
+                                <li v-for="(item,index) in menuList" :key="index">
+                                    <header class="menu-detail-header">
+                                        <section class="menu-detail-header-left">
+                                            <strong class="menu-item-title">{{item.name}}</strong>
+                                            <strong class="menu-item-description">{{item.description}}</strong>
+                                        </section>
+                                        <span class="menu-detail-header-right" @click="showTitleDetail(index)"></span>
+                                        <p class="description-tip" v-if="index == TitleDetailIndex" @click="NoneTitleDetail">
+                                            <span>{{item.name}}</span>
+                                            {{item.description}}
+                                        </p>
+                                    </header>
+                                </li>
+                            </ul>
+                        </section>
+                    </section>
+                </section>
+            </transition>
         </section>
     </div>
 </template>
 <script>
     import {mapState, mapMutations} from 'vuex'
-    import {shopDetails,msiteAdress} from '../../service/getData'
+    import {shopDetails,msiteAdress,foodMenu} from '../../service/getData'
     import ratingStar from '../../components/common/ratingStar'
     import {getImgPath} from '../../components/common/mixin'
     export default{
@@ -103,6 +135,10 @@
                 changeShowType: 'food',//切换显示商品或者评价
                 showActivities: false, //是否显示活动详情
                 windowHeight: null, //屏幕的高度
+                menuList: [], // 食品列表
+                menuIndex: 0, //已选菜单索引值，默认为0
+                categoryNum: [], //商品类型右上角已加入购物车的数量
+                TitleDetailIndex: null, //点击展示列表头部详情
             }
         },
         components: {
@@ -139,9 +175,11 @@
                     // 记录当前经度纬度进入vuex
                     this.RECORD_ADDRESS(res);
                 }
-                //获取商铺信息
+                // 获取商铺信息
                 this.shopDetailData = await shopDetails(this.shopId, this.latitude, this.longitude);
+                // 获取商铺食品列表
 
+                this.menuList = await foodMenu(this.shopId);
             },
             // 控制活动详情页的显示隐藏
             showActivitiesFun(){
@@ -152,7 +190,23 @@
                 if (value === 'rating') {
 
                 }
-            }
+
+            },
+            // 选中菜单
+            chooseMenu(index) {
+                this.menuIndex = index;
+            },
+            //
+            showTitleDetail(index) {
+                if (this.TitleDetailIndex == index) {
+                    this.TitleDetailIndex = null;
+                } else {
+                    this.TitleDetailIndex = index;
+                }
+            },
+            NoneTitleDetail() {
+                this.TitleDetailIndex = null;
+            },
         }
     }
 </script>
@@ -322,6 +376,118 @@
             .activity_show {
                 color: #3190e8;
                 border-color: #3190e8;
+            }
+        }
+    }
+
+    .food-container {
+        display: flex;
+        flex: 1;
+        padding-bottom: 2rem;
+    }
+    .menu-container {
+        display: flex;
+        flex: 1;
+        overflow-y: hidden;
+        .menu-left {
+            background-color: #f8f8f8;
+            width: 3.8rem;
+            .menu-left-li {
+                padding: .7rem .3rem;
+                border-bottom: 0.025rem solid #ededed;
+                box-sizing: border-box;
+                border-left: 0.15rem solid #f8f8f8;
+                position: relative;
+                img {
+                    @include wh(.5rem,.6rem);
+                }
+                span {
+                    @include sc(.6rem,#666);
+                }
+                .category-num {
+                    position: absolute;
+                    top: .1rem;
+                    right: .1rem;
+                    background-color: #ff461d;
+                    line-height: .6rem;
+                    text-align: center;
+                    border-radius: 50%;
+                    border: 0.025rem solid #ff461d;
+                    min-width: .6rem;
+                    height: .6rem;
+                    @include sc(.5rem,#fff);
+                    font-family: Helvetica Neue,Tahoma,Arial;
+                }
+            }
+
+            .activity_menu {
+                border-left: 0.15rem solid #3190e8;
+                background-color: #fff;
+                span:nth-of-type(1) {
+                    font-weight: bold;
+                }
+
+            }
+
+        }
+        .menu-right {
+            flex: 4;
+            overflow-y: auto;
+            .menu-detail-header {
+                width: 100%;
+                padding: .4rem;
+                position: relative;
+                @include fj;
+                align-items: center;
+                .menu-detail-header-left {
+                    width: 11rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    .menu-item-title {
+                        @include sc(.7rem, #666);
+                        font-weight: bold;
+                    }
+                    .menu-item-description {
+                        @include sc(.5rem, #999);
+                        width: 30%;
+                        overflow: hidden;
+
+                    }
+                }
+                .menu-detail-header-right {
+                    @include wh(.5rem,.5rem);
+                    display: block;
+                    @include bis('../../images/icon_point.png');
+                    background-size: 100% .4rem;
+                    background-position: left center;
+                }
+                .description-tip {
+                    background-color: #39373a;
+                    opacity: .95;
+                    @include sc(.5rem, #fff);
+                    position: absolute;
+                    top: 1.5rem;
+                    z-index: 14;
+                    width: 8rem;
+                    right: .2rem;
+                    padding: .5rem .4rem;
+                    border: 1px;
+                    border-radius: .2rem;
+                    span{
+                        color: #fff;
+                        line-height: .6rem;
+                        font-size: .55rem;
+                    }
+                }
+                .description-tip::after {
+                    content: '';
+                    position: absolute;
+                    @include wh(.4rem, .4rem);
+                    background-color: #39373a;
+                    top: -.5rem;
+                    right: .7rem;
+                    transform: rotate(-45deg) translateY(.41rem);
+                }
             }
         }
     }

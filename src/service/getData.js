@@ -114,6 +114,14 @@ var shopDetails = (shopid,latitude, longitude) => fetch('GET','/shopping/restaur
 })
 
 
+/**
+ * 获取food页面的商家属性活动列表
+ */
+var foodMenu = restaurant_id => fetch('GET','/shopping/v2/menu',{
+  restaurant_id,
+})
+
+
 export {
   hotcity,
   cityGuess,
@@ -127,4 +135,5 @@ export {
   foodDelivery,
   foodActivity,
   shopDetails,
+  foodMenu,
 }
