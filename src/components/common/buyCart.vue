@@ -1,0 +1,92 @@
+<template>
+    <section class="cart-module">
+        <section v-if="! foods.specifications.length" class="cart-button">
+            <transition name="showReduce">
+                <span v-if="foodNum" @click="removeOutCart(foods.category_id,foods.item_id,foods.specfoods[0].food_id,
+                           foods.specfoods[0].name,foods.specfoods[0].price,'',foods.specfoods[0].packing_fee,
+                           foods.specfoods[0].sku_id,foods.specfoods[0].stock)">
+                    <svg>
+                         <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-minus"></use>
+                    </svg>
+                </span>
+            </transition>
+            <transition name="fade">
+                <span clas="cart-num" v-if="foodNum">{{foodNum}}</span>
+            </transition>
+            <svg class="add-icon" @touchstart="addToCart(foods.category_id, foods.item_id, foods.specfoods[0].food_id,
+                                  foods.specfoods[0].name, foods.specfoods[0].price, '', foods.specfoods[0].packing_fee,
+                                  foods.specfoods[0].sku_id, foods.specfoods[0].stock, $event)">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-add"></use>
+            </svg>
+        </section>
+        <section v-else class="choose-specification">
+            <section class="choose-icon-container">
+                <transition name="showReduce">
+                    <svg class="specs-reduce-icon" v-if="foodNum" @click="showReduceTip">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-minus"></use>
+                    </svg>
+                </transition>
+                <transition name="fade">
+                    <span clas="cart-num" v-if="foodNum">{{foodNum}}</span>
+                </transition>
+                <span class="show-chooselist" @click="showChooseList(foods)">选规格</span>
+            </section>
+        </section>
+    </section>
+</template>
+
+<script>
+    import {mapState,mapMutations} from 'vuex'
+    export default{
+        data(){
+            return{
+                showMoveDot: [], //控制下落的小圆点显示隐藏
+                foodNum: 0,
+            }
+        },
+        props: [
+            'foods', 'shopId'
+        ],
+    }
+</script>
+
+<style lang="scss" scoped>
+    @import '../../style/mixin';
+    .cart-module {
+        .add-icon {
+            position: relative;
+            z-index: 999;
+        }
+        .cart-button {
+            display: flex;
+            align-items: center;
+        }
+        svg {
+            @include wh(.9rem, .9rem);
+            fill: #3190e8;
+        }
+        .specs-reduce-icon {
+            fill: #999;
+        }
+        .cart-num {
+            @include sc(.65rem,#666);
+            min-width: 1rem;
+            text-align: center;
+            font-family: Helvetica Neue,Tahoma;
+        }
+        .choose-specification {
+            .choose-icon-container {
+                display: flex;
+                align-items: center;
+                .show-chooselist {
+                    display: block;
+                    @include sc(.55rem,#fff);
+                    padding: .1rem .2rem;
+                    background-color: $blue;
+                    border-radius: 0.2rem;
+                    border: 1px solid $blue;
+                }
+            }
+        }
+    }
+</style>

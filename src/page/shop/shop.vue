@@ -148,6 +148,17 @@
                                                 </p>
                                             </section>
                                         </router-link>
+                                        <footer class="menu-detail-footer">
+                                            <section class="food-price">
+                                                <span>￥</span>
+                                                <span>{{foods.specfoods[0].price}}</span>
+                                                <span v-if="foods.specifications.length">起</span>
+                                            </section>
+                                            <buy-cart :shopId="shopId" :foods="foods" @moveInCart="listenInCart"
+                                                      @showChooseList="showChooseList" @showReduceTip="showReduceTip"
+                                                      @showMoveDot="showMoveDotFun">
+                                            </buy-cart>
+                                        </footer>
                                     </section>
                                 </li>
                             </ul>
@@ -162,6 +173,7 @@
     import {mapState, mapMutations} from 'vuex'
     import {shopDetails, msiteAdress, foodMenu} from '../../service/getData'
     import ratingStar from '../../components/common/ratingStar'
+    import buyCart from '../../components/common/buyCart'
     import {getImgPath} from '../../components/common/mixin'
     export default{
         data() {
@@ -179,7 +191,7 @@
             }
         },
         components: {
-            ratingStar,
+            ratingStar,buyCart
         },
         created() {
             console.log('created');
@@ -570,6 +582,23 @@
                                         line-height: .4rem;
                                     }
                                 }
+                                .attribute_new {
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    background-color: #4cd964;
+                                    @include wh(2rem,2rem);
+                                    display: flex;
+                                    align-items: flex-end;
+                                    transform: rotate(-45deg) translate(-.1rem, -1.5rem);
+                                    border: none;
+                                    border-radius: 0;
+                                    p {
+                                        @include sc(.4rem,#fff);
+                                        text-align: center;
+                                        flex: 1;
+                                    }
+                                }
                             }
                         }
                         .food-description-content {
@@ -593,6 +622,29 @@
                                 transform: scale(.8);
                                 margin-left: -0.35rem;
                             }
+                        }
+                    }
+                }
+                .menu-detail-footer {
+                    margin-left: 2.4rem;
+                    font-size: 0;
+                    margin-top: .3rem;
+                    @include fj;
+                    .food-price {
+                        span {
+                            font-family: 'Helvetica Neue',Tahoma,Arial;
+                        }
+                        span:nth-of-type(1) {
+                            @include sc(.5rem,#f60);
+                            margin-right: .05rem
+                        }
+                        span:nth-of-type(2) {
+                            @include sc(.7rem, #f60);
+                            font-weight: bold;
+                            margin-right: .3rem;
+                        }
+                        span:nth-of-type(3) {
+                            @include sc(.5rem,#666);
                         }
                     }
                 }
