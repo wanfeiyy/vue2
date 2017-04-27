@@ -3,3 +3,4 @@
  */
 export const SAVE_GEOHASH = 'SAVE_GEOHASH' // 记录经纬度
 export const RECORD_ADDRESS = 'RECORD_ADDRESS' // 保存geohash
+export const ADD_CART = 'ADD_CART'

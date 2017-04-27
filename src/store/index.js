@@ -13,6 +13,7 @@ const state = {
   latitude: '', // 当前位置纬度
   longitude: '', // 当前位置经度
   geohash: 'wtw3sm0q087',//地址geohash值
+  cartList: {}, // 加入购物车的商品列表
 }
 
 export default new Vuex.Store({
