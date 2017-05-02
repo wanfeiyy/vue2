@@ -59,9 +59,17 @@
                 this.ADD_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs, packing_fee, sku_id, stock});
                 let elLeft = event.target.getBoundingClientRect().left;
                 let elBottom =  event.target.getBoundingClientRect().bottom;
-                // this.showMoveDot.push(true);
-
-            }
+                this.showMoveDot.push(true);
+                this.$emit('showMoveDot', this.showMoveDot, elLeft, elBottom);
+            },
+            // 显示规格列表
+            showChooseList(foodScroll) {
+                this.$emit('showChooseList', foodScroll)
+            },
+            //点击多规格商品的减按钮，弹出提示
+            showReduceTip(){
+                this.$emit('showReduceTip')
+            },
         }
     }
 </script>

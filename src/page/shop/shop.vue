@@ -154,7 +154,7 @@
                                                 <span>{{foods.specfoods[0].price}}</span>
                                                 <span v-if="foods.specifications.length">起</span>
                                             </section>
-                                            <buy-cart :shopId="shopId" :foods="foods" @moveInCart="listenInCart"
+                                            <buy-cart :shopId="shopId" :foods="foods"
                                                       @showChooseList="showChooseList" @showReduceTip="showReduceTip"
                                                       @showMoveDot="showMoveDotFun">
                                             </buy-cart>
@@ -164,6 +164,33 @@
                             </ul>
                         </section>
                     </section>
+
+                    <section class="buy-cart-container">
+                        <section @click="toggleCartList" class="cart-icon-num">
+                            <div class="cart-icon-container" :class="{cart_icon_activity: totalPrice > 0,
+                                 move_in_cart: receiveInCart}" ref="cartContainer">
+                                <span v-if="totalNum" class="cart-list-length">{{totalNum}}</span>
+                                <svg class="cart-icon">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-icon"></use>
+                                </svg>
+                            </div>
+                            <div class="cart-num">
+                                <div>¥ {{totalPrice}}</div>
+                                <div>配送费¥{{deliveryFee}}</div>
+                            </div>
+                        </section>
+                        <section class="gotopay" :class="{goto_activity: minimumOrderAmount <= 0}">
+                            <span class="gotopay-button-style" v-if="minimumOrderAmount > 0">
+                                还差¥{{minimumOrderAmount}}起送
+                            </span>
+                            <router-link :to="{path: '/confirmOrder', query:{geohash, shopId}}"
+                            class="gotopay_button_style" v-else>
+                                去结算
+                            </router-link>
+                        </section>
+                    </section>
+
+
                 </section>
             </transition>
         </section>
@@ -178,16 +205,26 @@
     export default{
         data() {
             return {
-                geohash: '', //geohash位置信息
-                shopId: null, //商店id值
-                shopDetailData: null, //商铺详情
-                changeShowType: 'food',//切换显示商品或者评价
-                showActivities: false, //是否显示活动详情
-                windowHeight: null, //屏幕的高度
+                geohash: '', // geohash位置信息
+                shopId: null, // 商店id值
+                shopDetailData: null, // 商铺详情
+                changeShowType: 'food',// 切换显示商品或者评价
+                showActivities: false, // 是否显示活动详情
+                windowHeight: null, // 屏幕的高度
                 menuList: [], // 食品列表
-                menuIndex: 0, //已选菜单索引值，默认为0
-                categoryNum: [], //商品类型右上角已加入购物车的数量
-                TitleDetailIndex: null, //点击展示列表头部详情
+                menuIndex: 0, // 已选菜单索引值，默认为0
+                categoryNum: [], // 商品类型右上角已加入购物车的数量
+                TitleDetailIndex: null, // 点击展示列表头部详情
+                cartFoodList: [], //购物车商品列表
+                totalPrice: 0, //总共价格
+                showMoveDot: [], // 控制下落的小圆点显示隐藏
+                elLeft: 0, // 当前点击加按钮在网页中的绝对top值
+                elBottom: 0, // 当前点击加按钮在网页中的绝对left值
+                choosedFoods: null, // 当前选中数据
+                showSpecs: false,// 控制显示食品规格
+                specsIndex: 0, // 当前选中的规格索引值
+                showDeleteTip: false, // 多规格商品点击减按钮，弹出提示框
+                receiveInCart: false, // 购物车组件下落的圆点是否到达目标位置
             }
         },
         components: {
@@ -206,11 +243,38 @@
         mixins: [getImgPath],
         computed: {
             ...mapState([
-                'latitude', 'longitude'
+                'latitude', 'longitude', 'cartList'
             ]),
             promotionInfo: function () {
                 return this.shopDetailData.promotion_info || '欢迎光临，用餐高峰期请提前下单，谢谢。'
             },
+            // 当前商店购物信息
+            shopCart: function () {
+                return {...this.cartList[this.shopId]}
+            },
+            // 配送费
+            deliveryFee: function () {
+                if (this.shopDetailData) {
+                    return this.shopDetailData.float_delivery_fee;
+                } else {
+                    return null;
+                }
+            },
+            // 还差多少元起送，为负数时显示去结算按钮
+            minimumOrderAmount: function () {
+                if (this.shopDetailData) {
+                    return this.shopDetailData.float_minimum_order_amount - this.totalPrice;
+                } else {
+                    return null;
+                }
+            },
+            // 购物车中总共商品的数量
+            totalNum: function () {
+                let num = 0;
+                this.cartFoodList.forEach(item => {
+                    num += item.num
+                })
+            }
         },
         methods: {
             ...mapMutations([
@@ -256,6 +320,30 @@
             NoneTitleDetail() {
                 this.TitleDetailIndex = null;
             },
+            // 显示下落圆球
+            showMoveDotFun(showMoveDot, elLeft, elBottom) {
+                this.showMoveDot = [...this.showMoveDot, ...showMoveDot];
+                this.elLeft = elLeft;
+                this.elBottom = elBottom;
+            },
+            // 显示规格列表
+            showChooseList(foods) {
+                if (foods) {
+                    this.chooseFoods = foods;
+                }
+                this.showSpecs = ! this.showSpecs;
+                this.specsIndex = 0;
+            },
+
+            // 显示提示，无法减去商品
+            showReduceTip() {
+                this.showDeleteTip = true;
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => {
+                    clearTimeout(this.timer);
+                    this.showDeleteTip = false;
+                },3000)
+            }
         }
     }
 </script>
